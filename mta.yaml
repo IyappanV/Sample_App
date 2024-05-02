@@ -1,0 +1,89 @@
+_schema-version: "3.1"
+ID: sample_app
+description: A simple CAP project.
+version: 1.0.0-SNAPSHOT
+modules:
+- name: sample_app-srv
+  type: java
+  path: srv
+  properties:
+    JBP_CONFIG_COMPONENTS: 'jres: [''com.sap.xs.java.buildpack.jre.SAPMachineJRE'']'
+    JBP_CONFIG_SAP_MACHINE_JRE: '{ use_offline_repository: false, version: 17.+ }'
+    SPRING_PROFILES_ACTIVE: cloud,sandbox
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: sap_java_buildpack
+    readiness-health-check-http-endpoint: /
+    readiness-health-check-type: http
+  build-parameters:
+    build-result: target/*-exec.jar
+    builder: custom
+    commands:
+    - mvn clean package -DskipTests=true
+- name: db
+  type: hdb
+  path: db
+  requires:
+  - name: hdi_db
+- name: sample_app-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: sample_app-destination-service
+    parameters:
+      content-target: true
+  - name: sample_app_html_repo_host
+    parameters:
+      service-key:
+        name: sample_app_html_repo_host-key
+  - name: uaa_sample_app
+    parameters:
+      service-key:
+        name: uaa_sample_app-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: sample_app_sample_app_html_repo_host
+          ServiceInstanceName: sample_app-html5-app-host-service
+          ServiceKeyName: sample_app_html_repo_host-key
+          sap.cloud.service: sample_app
+        - Authentication: OAuth2UserTokenExchange
+          Name: sample_app_uaa_sample_app
+          ServiceInstanceName: sample_app-xsuaa-service
+          ServiceKeyName: uaa_sample_app-key
+          sap.cloud.service: sample_app
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+resources:
+- name: hdi_db
+  type: com.sap.xs.hdi-container
+  properties:
+    hdi-container-name: ${service-name}
+- name: sample_app-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      version: 1.0.0
+    service: destination
+    service-name: sample_app-destination-service
+    service-plan: lite
+- name: sample_app_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: sample_app-html5-app-host-service
+    service-plan: app-host
+- name: uaa_sample_app
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: sample_app-xsuaa-service
+    service-plan: application
+parameters:
+  enable-parallel-deployments: true
