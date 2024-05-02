@@ -1,0 +1,47 @@
+<mvc:View controllerName="com.project1.controller.Login"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:l="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:card="sap.f.cards"
+    xmlns:core="sap.ui.core">
+    <Page showHeader="false">
+        <content>
+            <VBox height="100%" justifyContent="Center" alignItems="Center">
+                <FlexBox class="sapUiLargeMarginBottom" justifyContent="Center" alignItems="Center">
+                    <f:Card height="27rem" class="sapUiContentPadding">
+                        <f:content>
+                            <VBox class="sapUiLargeMargin " justifyContent="Center" alignItems="Center">
+                                <HBox class=" sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiTinyMarginEnd" alignItems="Start">
+                                    <Image src="./images/logo3.png" width="250px"/>
+                                    <!-- <Title class="sapUiTinyMarginBegin" titleStyle="H1" text="PPAssist" textAlign="Center"/> -->
+                                </HBox>
+                                <form:SimpleForm editable="false" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1" singleContainerFullSize="false">
+                                    <form:content>
+                                        <Label text="User Name" />
+                                        <Input id="inpUsername" liveChange="onLiveChangeUsername" value="{loginMdl>/user_id}" placeholder="Enter Username}" class="sapUiSizeCozy"/>
+                                        <Label text="Password" />
+                                        <Input type="Password" id="inpPassword" liveChange="onLiveChangePassword" value="{loginMdl>/password}" placeholder="Enter Password" class="sapUiSizeCozy"/>
+                                        <!-- <Label text="Language" />
+                                        <ComboBox selectedKey="1">
+                                            <core:Item key="1" text="English" />
+                                        </ComboBox> -->
+                                        <Label />
+                                        <HBox height="3rem" justifyContent="SpaceBetween">
+                                            <Link text="Forgot Password?"/>
+                                            <Link text="Change Password" enabled="true"/>
+                                        </HBox>
+                                        <Button text="Sign In" type="Emphasized" class="sapUiSizeCozy" width="100%" press="onPressLogin"/>
+                                    </form:content>
+                                </form:SimpleForm>
+                            </VBox>
+                        </f:content>
+                    </f:Card>
+
+                </FlexBox>
+                <HBox class="sapUiLargeMarginTop"></HBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

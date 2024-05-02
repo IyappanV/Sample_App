@@ -78,20 +78,19 @@
       },
       "routes": [
         {
-          "name": "RouteView1",
-          "pattern": ":?query:",
+          "name": "login",
+          "pattern": "",
           "target": [
-            "TargetView1"
+            "Login"
           ]
         }
       ],
       "targets": {
-        "TargetView1": {
+        "Login": {
           "viewType": "XML",
-          "transition": "slide",
-          "clearControlAggregation": false,
-          "viewId": "View1",
-          "viewName": "View1"
+          "viewId": "Login",
+          "viewName": "Login",
+          "viewLevel": 1
         }
       }
     },

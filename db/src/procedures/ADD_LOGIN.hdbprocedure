@@ -1,0 +1,20 @@
+PROCEDURE "ADD_LOGIN" (IN p_username VARCHAR(100), IN p_password VARCHAR(100), OUT p_result NVARCHAR(100))
+AS
+BEGIN
+
+DECLARE v_id BIGINT;
+    
+    -- Inserting values into the logins table
+    INSERT INTO "logins" ("username", "password")
+    VALUES (:p_username, :p_password);
+    
+    -- Getting the ID of the newly inserted record
+    SELECT "id" INTO v_id FROM "logins" WHERE "username" = :p_username;
+    
+    -- Checking if the record was successfully inserted
+    IF :v_id IS NOT NULL THEN
+        p_result := 'Record inserted successfully. ID: ' || :v_id;
+    ELSE
+        p_result := 'Failed to insert record.';
+    END IF;
+END;
