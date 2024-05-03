@@ -1,20 +1,48 @@
-PROCEDURE "ADD_LOGIN" (IN p_username VARCHAR(100), IN p_password VARCHAR(100), OUT p_result NVARCHAR(100))
+PROCEDURE "ADD_LOGIN" (IN "IN_PARAM" NCLOB, OUT EX_MESSAGE NVARCHAR(200))
 AS
 BEGIN
+    -- Declare variables
+    DECLARE v_id BIGINT := 0;
+    DECLARE v_username NVARCHAR(256);
+    DECLARE v_password NVARCHAR(256);
+    DECLARE v_status INTEGER;
 
-DECLARE v_id BIGINT;
-    
-    -- Inserting values into the logins table
-    INSERT INTO "logins" ("username", "password")
-    VALUES (:p_username, :p_password);
-    
-    -- Getting the ID of the newly inserted record
-    SELECT "id" INTO v_id FROM "logins" WHERE "username" = :p_username;
-    
-    -- Checking if the record was successfully inserted
-    IF :v_id IS NOT NULL THEN
-        p_result := 'Record inserted successfully. ID: ' || :v_id;
+    -- Set up an exception handler for custom exceptions
+    DECLARE empty_name CONDITION FOR SQL_ERROR_CODE 10001;
+    DECLARE EXIT HANDLER FOR empty_name
+    BEGIN
+        SET EX_MESSAGE := 'Empty name provided.';
+    END;
+
+    -- Parse JSON values
+    SELECT 
+        IFNULL(JSON_VALUE(:IN_PARAM, '$.id'), 0),
+        JSON_VALUE(:IN_PARAM, '$.username'),
+        JSON_VALUE(:IN_PARAM, '$.password'),
+        JSON_VALUE(:IN_PARAM, '$.status')
+    INTO 
+        v_id, v_username, v_password, v_status
+    FROM DUMMY;
+
+    -- Check if ID is provided
+    IF v_id > 0 THEN
+        -- Update existing record
+        UPDATE "logins"
+        SET
+            "username" = v_username,
+            "password" = v_password,
+            "status" = v_status
+        WHERE
+            "id" = v_id;
     ELSE
-        p_result := 'Failed to insert record.';
+        -- Insert new record
+        INSERT INTO "logins"("username", "password", "status")
+        VALUES(v_username, v_password, v_status);
+        
+        -- Retrieve inserted ID
+        SELECT current_identity_value() INTO v_id FROM DUMMY;
     END IF;
+
+    -- Set success message
+    SET EX_MESSAGE := 'Login added successfully.';
 END;
