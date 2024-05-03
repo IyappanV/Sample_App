@@ -1,48 +1,44 @@
 PROCEDURE "ADD_LOGIN" (IN "IN_PARAM" NCLOB, OUT EX_MESSAGE NVARCHAR(200))
 AS
 BEGIN
-    -- Declare variables
-    DECLARE v_id BIGINT := 0;
-    DECLARE v_username NVARCHAR(256);
-    DECLARE v_password NVARCHAR(256);
-    DECLARE v_status INTEGER;
 
-    -- Set up an exception handler for custom exceptions
+    -- Login Information
+	DECLARE  ID BIGINT := 0;
+    DECLARE username NVARCHAR(256);
+    DECLARE password NVARCHAR(256);
+    DECLARE status INTEGER;
+
+    -- Set up an exception handler for the custom exception
     DECLARE empty_name CONDITION FOR SQL_ERROR_CODE 10001;
     DECLARE EXIT HANDLER FOR empty_name
     BEGIN
-        SET EX_MESSAGE := 'Empty name provided.';
+        EX_MESSAGE := ' ' || ::SQL_ERROR_MESSAGE;
+        -- DROP TABLE #temp_hirerchy1;
     END;
+    
+    SELECT IFNULL(JSON_VALUE(:IN_PARAM, '$.id'), 0) INTO "ID" FROM DUMMY;
+    
+    	IF ID > 0 THEN
+    	
+    		-- Record exists, perform an update
+	        UPDATE "logins"
+	        SET
+	            "username" = JSON_VALUE(:IN_PARAM, '$.username'),
+	            "password" = JSON_VALUE(:IN_PARAM, '$.password'),
+	            "status" = JSON_VALUE(:IN_PARAM, '$.status')
+	        WHERE
+	            "id" = ID;
+            
+    	ELSE
+	    		-- New record insert
+	    	    INSERT INTO "logins"("username","password","status")
+	    	    	VALUES(
+	    	    		JSON_VALUE(:IN_PARAM, '$.username'),
+	    	    		JSON_VALUE(:IN_PARAM, '$.password'),
+	    	    		JSON_VALUE(:IN_PARAM, '$.status')
+	    	    	);
+	            select current_identity_value() into ID from dummy;
+	            
+        END IF;
 
-    -- Parse JSON values
-    SELECT 
-        IFNULL(JSON_VALUE(:IN_PARAM, '$.id'), 0),
-        JSON_VALUE(:IN_PARAM, '$.username'),
-        JSON_VALUE(:IN_PARAM, '$.password'),
-        JSON_VALUE(:IN_PARAM, '$.status')
-    INTO 
-        v_id, v_username, v_password, v_status
-    FROM DUMMY;
-
-    -- Check if ID is provided
-    IF v_id > 0 THEN
-        -- Update existing record
-        UPDATE "logins"
-        SET
-            "username" = v_username,
-            "password" = v_password,
-            "status" = v_status
-        WHERE
-            "id" = v_id;
-    ELSE
-        -- Insert new record
-        INSERT INTO "logins"("username", "password", "status")
-        VALUES(v_username, v_password, v_status);
-        
-        -- Retrieve inserted ID
-        SELECT current_identity_value() INTO v_id FROM DUMMY;
-    END IF;
-
-    -- Set success message
-    SET EX_MESSAGE := 'Login added successfully.';
 END;
